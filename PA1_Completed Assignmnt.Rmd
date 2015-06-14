@@ -47,7 +47,12 @@ TotalSteps<-Data %>%
         group_by(date) %>%
         summarise(TotalNumberOfSteps=sum(steps))
 
+png(filename="Hist1.png",width = 480,height = 480)
 qplot(TotalNumberOfSteps,data =TotalSteps,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps$TotalNumberOfSteps),2),sep=""))
+dev.off()
+
+qplot(TotalNumberOfSteps,data =TotalSteps,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps$TotalNumberOfSteps),2),sep=""))
+
 ```
 
 
@@ -61,6 +66,10 @@ Interval<-Data %>%
         summarise(AverageNumberOfSteps=mean(steps)) %>%
         rename(Interval=interval) %>%
         arrange(desc(AverageNumberOfSteps))
+
+png(filename="Line1.png",width = 480,height = 480)
+qplot(x=Interval,y=AverageNumberOfSteps,data = Interval,geom="line",main=paste("Average Number of Steps by Interval \n","Interval with Largest Average: ",first(Interval$Interval)))
+dev.off()
 
 qplot(x=Interval,y=AverageNumberOfSteps,data = Interval,geom="line",main=paste("Average Number of Steps by Interval \n","Interval with Largest Average: ",first(Interval$Interval)))
 
@@ -86,7 +95,12 @@ TotalSteps_Imputed<-Imputed %>%
         group_by(date) %>%
         summarise(TotalNumberOfSteps=sum(steps))
 
+png(filename="Hist2.png",width=480,height=480)
 qplot(TotalNumberOfSteps,data =TotalSteps_Imputed,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps_Imputed$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps_Imputed$TotalNumberOfSteps),2),sep=""))
+dev.off()
+
+qplot(TotalNumberOfSteps,data =TotalSteps_Imputed,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps_Imputed$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps_Imputed$TotalNumberOfSteps),2),sep=""))
+
 ```
 
 ##Differences Between Weekdays & Weekends
@@ -98,6 +112,10 @@ Imputed<-select(Imputed,-Day)
 
 Imputed<-group_by(Imputed,interval,TypeOfDay)
 Interval_Imputed<-summarise(Imputed,AverageNumberOfSteps=mean(steps))
+
+png(filename="Line2.png",width=480,height=480)
+qplot(x=interval,y=AverageNumberOfSteps,data=Interval_Imputed,geom="line",facets = TypeOfDay~.,main="Average Number of Steps by Interval")
+dev.off()
 
 qplot(x=interval,y=AverageNumberOfSteps,data=Interval_Imputed,geom="line",facets = TypeOfDay~.,main="Average Number of Steps by Interval")
 
