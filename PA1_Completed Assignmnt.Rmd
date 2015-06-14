@@ -1,0 +1,110 @@
+---
+title: "PA1_template"
+author: "Maxwell J. Williams"
+date: "Friday, June 12, 2015"
+output: html_document
+---
+
+#Contents
+* Loading Activity Data
+* Transforming Data
+* Mean & Median Total Number of Steps Taken per Day
+* Average Daily Activity Pattern
+* Imputing Missing Values
+* Differences Between Weekdays and Weekends
+
+##Loading Activity Data
+I saved the dataset in my working directory and used the following packages: 
+
+* Data set:  
+    + Activity  
+* Packages:  
+    + knitr  
+    + ggplot2  
+    + lubridate  
+    + dplyr  
+
+```{r Loading Activity Data}
+library(knitr)
+library(ggplot2)
+library(lubridate)
+library(dplyr)
+setwd("~/Learning & Development/Reproducible Research/Week 2")
+Data<-read.csv("./activity.csv",colClasses=c("integer","Date","integer"))
+```
+
+
+##Transforming Data
+The only significant transformatoin was to ensure the "date" variable is class Date. 
+
+
+##Mean & Median Total Number of Steps Taken per Day
+The chart below shows the distribution of the total number of steps taken per day and also reports the mean and median.
+
+```{r Total Number of Steps Per Day}
+TotalSteps<-Data %>%
+        filter(is.na(steps)==FALSE) %>%
+        group_by(date) %>%
+        summarise(TotalNumberOfSteps=sum(steps))
+
+qplot(TotalNumberOfSteps,data =TotalSteps,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps$TotalNumberOfSteps),2),sep=""))
+```
+
+
+##Average Daily Activity Pattern
+The chart below shows the average number of steps taken for each interval and reports the interval with the largest average number of steps.
+
+```{r Average Daily Avticity Pattern}
+Interval<-Data %>%
+        filter(is.na(steps)==FALSE) %>%
+        group_by(interval) %>%
+        summarise(AverageNumberOfSteps=mean(steps)) %>%
+        rename(Interval=interval) %>%
+        arrange(desc(AverageNumberOfSteps))
+
+qplot(x=Interval,y=AverageNumberOfSteps,data = Interval,geom="line",main=paste("Average Number of Steps by Interval \n","Interval with Largest Average: ",first(Interval$Interval)))
+
+```
+
+
+##Imputing Missing Values
+There are 2304 rows with misisng values. I chose to replace the missing values with the average for the corresponding interval. The chart below shows the resulting distribution. Note that the mean did not change, but the median increased slightly. Imputing missing values this way cuases the distribution to tighten a little bit, but is not that significant.
+
+```{r Imputing Missing Values}
+NumberOfNAs<-nrow(filter(Data,is.na(steps)==TRUE))
+
+Missing<- filter(Data,is.na(steps)==TRUE)
+Missing<-merge(Missing,Interval,by.x="interval",by.y="Interval")
+Missing<-mutate(Missing,steps=AverageNumberOfSteps)
+Missing<-select(Missing,-AverageNumberOfSteps)
+Missing<-Missing[,c(2,3,1)]
+
+Complete<-filter(Data,is.na(steps)==FALSE)
+Imputed<-rbind(Complete,Missing)
+
+TotalSteps_Imputed<-Imputed %>%
+        group_by(date) %>%
+        summarise(TotalNumberOfSteps=sum(steps))
+
+qplot(TotalNumberOfSteps,data =TotalSteps_Imputed,ylab = "Frequency",main=paste("Distribution of Total Number of Steps Taken Per Day \n Mean ",round(mean(TotalSteps_Imputed$TotalNumberOfSteps),2),"\n Median ",round(median(TotalSteps_Imputed$TotalNumberOfSteps),2),sep=""))
+```
+
+##Differences Between Weekdays & Weekends
+The chart belwo shows the differences in the average number of steps taken per interval. The chart also shows the differences between weekdays and weekends.  
+```{r}
+Imputed<-mutate(Imputed,Day=weekdays(date))
+Imputed<-mutate(Imputed,TypeOfDay=ifelse(grepl(pattern = "^S",x = Day),"Weekend","Weekday"))
+Imputed<-select(Imputed,-Day)
+
+Imputed<-group_by(Imputed,interval,TypeOfDay)
+Interval_Imputed<-summarise(Imputed,AverageNumberOfSteps=mean(steps))
+
+qplot(x=interval,y=AverageNumberOfSteps,data=Interval_Imputed,geom="line",facets = TypeOfDay~.,main="Average Number of Steps by Interval")
+
+```
+
+
+
+
+
+
